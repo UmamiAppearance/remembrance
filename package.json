@@ -1,0 +1,22 @@
+{
+  "name": "remembrance",
+  "version": "0.1.0",
+  "description": "Make sure your build files are up to date.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UmamiAppearance/remembrance.git"
+  },
+  "keywords": [
+    "Building"
+  ],
+  "author": "UmamiAppearance",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/UmamiAppearance/remembrance/issues"
+  },
+  "homepage": "https://github.com/UmamiAppearance/remembrance#readme"
+}
