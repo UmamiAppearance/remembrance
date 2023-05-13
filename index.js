@@ -1,3 +1,7 @@
-import { stat } from "fs";
+import { existsSync, stat } from "fs";
 
-console.log(stat);
+if (!existsSync("./remembrance.json")) {
+    console.error("Could not find config file 'remembrance.json' in projects root folder.");
+    process.exit(1);
+}
+
