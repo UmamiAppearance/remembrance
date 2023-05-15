@@ -1,5 +1,6 @@
 {
-    "src": "**/src/**",
-    "dist": "**/dist/**",
-    "includeTests": true
+    "src": "./index.js",
+    "dist": "./dist/**",
+    "includeTests": true,
+    "debug": "verbose"
 }

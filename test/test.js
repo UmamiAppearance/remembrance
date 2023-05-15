@@ -12,7 +12,9 @@ const forkPromise = (modulePath, args, options) => {
     });
 };
 
+
 const projectA = await forkPromise("../../../index.js", [], { cwd: "./test/fixtures/projectA" });
 const projectB = await forkPromise("../../../index.js", [], { cwd: "./test/fixtures/projectB" });
+
 console.log(projectA);
 console.log(projectB);

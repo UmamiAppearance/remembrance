@@ -11,6 +11,8 @@ const throwError = message => {
     process.exit(1);
 };
 
+const debugInfo = info => console.log(`\nDEBUG INFO\n==========\n${info}\n`);
+
 
 // read config vars
 let data;
@@ -36,11 +38,30 @@ if (!config.dist) {
 
 
 // set default parameters
-if (!Array.isArray(config.extensions)) {
-    config.extensions = [ "js", "cjs", "mjs", "ts" ];
+if (config.debug === undefined) {
+    config.debug = false;
 }
 
-console.log(config);
+if (!Array.isArray(config.extensions)) {
+    config.extensions = [ "cjs", "js", "map", "mjs", "ts" ];
+}
+
+if (config.warnOnly === undefined) {
+    if (process.env.NODE_ENV && process.env.NODE_ENV === "development") {
+        config.warnOnly = true;
+    } else {
+        config.warnOnly = false;
+    }
+}
+
+if (config.resolveRoot === undefined) {
+    config.resolveRoot = true;
+}
+
+
+if (config.debug) {
+    debugInfo(`Config-Settings ${JSON.stringify(config, null, 4)}`);
+}
 
 // ignore typical test folders by default
 const excludeList = !config.includeTests
@@ -59,13 +80,26 @@ const excludeList = !config.includeTests
         "**/tests/**/fixtures/**/*"
     ] : [];
 
+let verboseDebugging = false;
+if (config.debug) {
+    if (config.debug === "verbose") {
+        verboseDebugging = true;
+    }
+
+    if (excludeList.length) {
+        debugInfo(`Test folder exclude pattern:\n${JSON.stringify(config, null, 4)}`);
+    } else {
+        debugInfo("No test folders are explicitly excluded.");
+    }
+}
+
 
 // add user defined folders to exclude list
 if (config.excludeDirs) {
     excludeList.join(ensureArray(config.excludeDirs));
+} else if (config.debug) {
+    debugInfo("No exclude files/directories defined by the user.");
 }
-
-console.log(excludeList);
 
 // build a function to ignore the exclude list
 const excludeDirs = excludeList.length
@@ -88,17 +122,41 @@ const ensureExtension = reMatch(
 );
 
 // source and dist file matching functions
-const matchSrc = picomatch(ensureArray(config.src));
-const matchDist = picomatch(ensureArray(config.dist));
+const renderList = rawInput => {
+    let sourceList = ensureArray(rawInput);
+    if (config.resolveRoot) {
+        sourceList = sourceList.map(pattern => {
+            console.log(pattern);
+            if (pattern.at(0) === ".") {
+                return joinPath(CWD, pattern);
+            }
+            return pattern;
+        });
+    }    
+    return sourceList;
+};
+
+const matchSrc = picomatch(renderList(config.src));
+const matchDist = picomatch(renderList(config.dist));
 
 // file collecting function
 const collectFiles = async () => {
+    if (config.debug) {
+        debugInfo("Start collecting files!");
+    }
     
     const srcFiles = [];
     const distFiles = [];
     
     const collect = async dirPath => {
+        
         const files = await readdir(dirPath);
+
+        if (verboseDebugging) {
+            debugInfo(`Entering directory: '${dirPath}'`);
+            console.log(`File List: ${JSON.stringify(files, null, 4)}\n`);
+        }
+
     
         for (const file of files) {
             
@@ -112,17 +170,36 @@ const collectFiles = async () => {
                 const fullPath = joinPath(dirPath, file);
                 
                 if (!excludeDirs(fullPath)) {
-                    console.log(fullPath);
+                    if (verboseDebugging) {
+                        console.log(`(File '${file}' gets tested against the match list)`);
+                    }
                 
                     if (matchSrc(fullPath)) {
                         srcFiles.push(fullPath);
+                        if (config.debug) {
+                            console.log(`  * Found match for source file list: '${fullPath}'`);
+                        }
                     } 
                     
                     else if (matchDist(fullPath)) {
                         distFiles.push(fullPath);
-                    } 
+                        if (config.debug) {
+                            console.log(`  * Found match for dist file list: '${fullPath}'`);
+                        }
+                    }
+
+                    else if (verboseDebugging) {
+                        console.log("    - no match --> skipped");
+                    }
                 }
+
+                else if (verboseDebugging) {
+                    console.log(`  * File '${file}' matches the exclusion list --> skipped`);
+                }
+            } else if (verboseDebugging) {
+                console.log(`  * File '${file}' is not part of the extension list --> skipped`);
             }
+
         }
     };
 
@@ -141,22 +218,47 @@ const collectFiles = async () => {
 const { srcFiles, distFiles } = await collectFiles();
 
 let sTime = new Date(0);
+let mostCurrentFile;
 
 // search for the most current source file
+if (verboseDebugging) {
+    debugInfo("Analyzing Source Files:");
+}
+
 for (const file of srcFiles) {
     const { mtime } = await stat(file);
+
+    if (verboseDebugging) {
+        console.log(`  * Source-File: '${file}\n  * Modified: ${mtime}'`);
+    }
+
     if (mtime > sTime) {
         sTime = mtime;
+        mostCurrentFile = file;
     }
 }
 
+if (config.debug) {
+    debugInfo(`Most current source file is '${mostCurrentFile}'`);
+}
+
+
 // search for outdated dist files
+if (verboseDebugging) {
+    debugInfo("Analyzing Dist Files:");
+}
+
 let outdated = false;
 for (const file of distFiles) {
     const { mtime } = await stat(file);
+
+    if (verboseDebugging) {
+        console.log(`  * Dist-File: '${file}\n  * Modified: ${mtime}'`);
+    }
+
     if (mtime < sTime) {
         outdated = true;
-        console.warn(`Dist-File '${file}' is not up to date.`);
+        console.warn(` ==> Dist-File '${file}' is not up to date <==`);
     }
 }
 
