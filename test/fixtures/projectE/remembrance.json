@@ -1,0 +1,10 @@
+{
+    "src": "**/src/**",
+    "dist": "**/dist/**",
+    "extensions": [
+        "js",
+        "cjs",
+        "ts"
+    ],
+    "includeTests": true
+}

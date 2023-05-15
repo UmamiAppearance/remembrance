@@ -1,5 +1,6 @@
 {
-    "src": "**/src/**",
-    "dist": "**/dist/**",
-    "includeTests": true
+    "src": "./index.js",
+    "dist": "./dist/dist.js",
+    "includeTests": true,
+    "silent": true
 }

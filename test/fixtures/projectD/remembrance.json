@@ -1,0 +1,11 @@
+{
+    "src": [
+        "./index.js",
+        "./index.ts",
+        "./src/**"
+    ],
+    "dist": "./dist/**",
+    "exclude": "**/C/**",
+    "includeTests": true,
+    "silent": true
+}

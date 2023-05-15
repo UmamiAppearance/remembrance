@@ -1,7 +1,5 @@
 import { fork } from "child_process";
 
-//process.chdir("./projectA");
-
 const forkPromise = (modulePath, args, options) => {
     return new Promise((resolve, reject) => {
         fork(modulePath, args, options)
@@ -12,9 +10,19 @@ const forkPromise = (modulePath, args, options) => {
     });
 };
 
+const resultSymbol = [ "✔", "✖" ];
 
-const projectA = await forkPromise("../../../index.js", [], { cwd: "./test/fixtures/projectA" });
-const projectB = await forkPromise("../../../index.js", [], { cwd: "./test/fixtures/projectB" });
+const testRun = async (info, cwd, expectError=false) => {
+    let result = await forkPromise("../../../index.js", [], { cwd });
+    
+    // flip result if error is expected
+    if (expectError) result ^= 1; 
+    
+    process.stdout.write(`    ${resultSymbol[result]} ${info}\n`);
+};
 
-console.log(projectA);
-console.log(projectB);
+await testRun("Single file build success", "./test/fixtures/projectA");
+await testRun("Single file build fail", "./test/fixtures/projectB", true);
+await testRun("Multi file build success", "./test/fixtures/projectC");
+await testRun("Multi file build fail", "./test/fixtures/projectD", true);
+await testRun("File extension modification", "./test/fixtures/projectE");

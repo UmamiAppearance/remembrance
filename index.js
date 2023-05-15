@@ -2,9 +2,22 @@ import { join as joinPath } from "path";
 import { readdir, readFile, stat } from "fs/promises";
 import picomatch from "picomatch";
 
+// helpers
 const CWD = process.cwd();
-const ensureArray = arr => Array.isArray(arr) ? arr : [arr];
 const isDirectory = async filePath => (await stat(filePath)).isDirectory();
+
+// ensure array and resolve relative paths
+const renderList = rawInput => {
+
+    const ensureArray = arr => Array.isArray(arr) ? arr : [arr];
+    
+    return ensureArray(rawInput).map(pattern => {
+        if (pattern.at(0) === ".") {
+            return joinPath(CWD, pattern);
+        }
+        return pattern;
+    });
+};
 
 const throwError = message => {
     console.error(message);
@@ -37,7 +50,7 @@ if (!config.dist) {
 }
 
 
-// set default parameters
+// set other config default parameters
 if (config.debug === undefined) {
     config.debug = false;
 }
@@ -54,14 +67,15 @@ if (config.warnOnly === undefined) {
     }
 }
 
-if (config.resolveRoot === undefined) {
-    config.resolveRoot = true;
+if (config.silent === undefined) {
+    config.silent = false;
 }
 
-
+// log config settings in debug mode
 if (config.debug) {
     debugInfo(`Config-Settings ${JSON.stringify(config, null, 4)}`);
 }
+
 
 // ignore typical test folders by default
 const excludeList = !config.includeTests
@@ -78,8 +92,11 @@ const excludeList = !config.includeTests
         "**/tests/**/helpers/**/*",
         "**/tests/**/fixture/**/*",
         "**/tests/**/fixtures/**/*"
-    ] : [];
+    ]
+    : [];
 
+
+// set verbose debugging if requested
 let verboseDebugging = false;
 if (config.debug) {
     if (config.debug === "verbose") {
@@ -94,15 +111,20 @@ if (config.debug) {
 }
 
 
-// add user defined folders to exclude list
-if (config.excludeDirs) {
-    excludeList.join(ensureArray(config.excludeDirs));
+// add user defined folders/files to exclude list
+if (config.exclude) {
+    excludeList.push(...renderList(config.exclude));
+    
+    if (config.debug) {
+        debugInfo("Found user defined exclude files");
+    }
 } else if (config.debug) {
     debugInfo("No exclude files/directories defined by the user.");
 }
 
-// build a function to ignore the exclude list
-const excludeDirs = excludeList.length
+
+// build a picomatch function to ignore the exclude list (always return false if list is empty)
+const exclude = excludeList.length
     ? picomatch(excludeList)
     : () => false;
  
@@ -121,23 +143,11 @@ const ensureExtension = reMatch(
         .map(ext => `\\.${ext}$`)
 );
 
-// source and dist file matching functions
-const renderList = rawInput => {
-    let sourceList = ensureArray(rawInput);
-    if (config.resolveRoot) {
-        sourceList = sourceList.map(pattern => {
-            console.log(pattern);
-            if (pattern.at(0) === ".") {
-                return joinPath(CWD, pattern);
-            }
-            return pattern;
-        });
-    }    
-    return sourceList;
-};
-
+// source and dist file picomatch functions
 const matchSrc = picomatch(renderList(config.src));
 const matchDist = picomatch(renderList(config.dist));
+
+
 
 // file collecting function
 const collectFiles = async () => {
@@ -148,6 +158,7 @@ const collectFiles = async () => {
     const srcFiles = [];
     const distFiles = [];
     
+    // recursive collect function
     const collect = async dirPath => {
         
         const files = await readdir(dirPath);
@@ -160,16 +171,18 @@ const collectFiles = async () => {
     
         for (const file of files) {
             
+            // if file is a directory call collect function recursively
             if (await isDirectory(joinPath(dirPath, file))) {
                 if (!noWayDirs.test(file)) {
                     await collect(joinPath(dirPath, file));
                 }
             }
             
+            // otherwise test the file if the file extension is valid
             else if (ensureExtension.test(file)) {
                 const fullPath = joinPath(dirPath, file);
                 
-                if (!excludeDirs(fullPath)) {
+                if (!exclude(fullPath)) {
                     if (verboseDebugging) {
                         console.log(`(File '${file}' gets tested against the match list)`);
                     }
@@ -194,15 +207,16 @@ const collectFiles = async () => {
                 }
 
                 else if (verboseDebugging) {
-                    console.log(`  * File '${file}' matches the exclusion list --> skipped`);
+                    console.log(`  * File '${file}' found on exclusion list --> skipped`);
                 }
             } else if (verboseDebugging) {
-                console.log(`  * File '${file}' is not part of the extension list --> skipped`);
+                console.log(`(File '${file}' is not part of the extension list) --> skipped`);
             }
 
         }
     };
 
+    // start collection function at the current working directory (the project's root folder)
     await collect(CWD);
 
     if (!srcFiles.length) {
@@ -215,10 +229,15 @@ const collectFiles = async () => {
 };
 
 
+// collect source and dist files in different vars
 const { srcFiles, distFiles } = await collectFiles();
 
+// initialize a last modified value for the source files
+// start at unix-time zero (to allow immediate overwriting)
 let sTime = new Date(0);
 let mostCurrentFile;
+
+
 
 // search for the most current source file
 if (verboseDebugging) {
@@ -232,6 +251,7 @@ for (const file of srcFiles) {
         console.log(`  * Source-File: '${file}\n  * Modified: ${mtime}'`);
     }
 
+    // overwrite source greatest modified time if the value is bigger
     if (mtime > sTime) {
         sTime = mtime;
         mostCurrentFile = file;
@@ -256,12 +276,17 @@ for (const file of distFiles) {
         console.log(`  * Dist-File: '${file}\n  * Modified: ${mtime}'`);
     }
 
+    // any source file, which is modified after the most current source file
+    // produces an error case
     if (mtime < sTime) {
         outdated = true;
-        console.warn(` ==> Dist-File '${file}' is not up to date <==`);
+        if (!config.silent) {
+            console.warn(`  ==> Dist-File '${file}' is not up to date <==`);
+        }
     }
 }
 
+// exit with an error if error case not deliberately ignored
 if (outdated && !config.warnOnly) {
     process.exit(1);
 }
