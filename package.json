@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Make sure dist files are up to date.",
   "main": "index.js",
+  "bin": {
+    "remembrance": "./index.js"
+  },
   "type": "module",
   "scripts": {
     "lint": "eslint ./src/*.js",
