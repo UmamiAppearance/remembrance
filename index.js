@@ -292,7 +292,7 @@ for (const file of distFiles) {
     if (mtime < sTime) {
         outdated = true;
         if (!config.silent) {
-            console.warn(`  ==> Dist-File '${file}' is not up to date <==`);
+            console.warn(`  ==> '${file}' is not up to date`);
         }
     }
 }
