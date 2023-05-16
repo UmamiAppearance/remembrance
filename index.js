@@ -30,11 +30,11 @@ const debugInfo = info => console.log(`\nDEBUG INFO\n==========\n${info}\n`);
 // read config vars
 let data;
 try {
-    data = await readFile(joinPath(CWD, "remembrance.json"), "utf8");
+    data = await readFile(joinPath(CWD, ".remembrance.json"), "utf8");
 } catch(err) {
     if (err) {
         if (err.code === "ENOENT") {
-            throwError("Could not find config file 'remembrance.json' in projects root folder.");
+            throwError("Could not find config file '.remembrance.json' in projects root folder.");
         }
         throwError(err);
     }
@@ -43,10 +43,10 @@ const config = JSON.parse(data);
 
 // test for the two mandatory keys "src" and "dist"
 if (!config.src) {
-    throwError("Key 'src' must be set in 'remembrance.json'.");
+    throwError("Key 'src' must be set in '.remembrance.json'.");
 }
 if (!config.dist) {
-    throwError("Key 'dist' must be set in 'remembrance.json'.");
+    throwError("Key 'dist' must be set in '.remembrance.json'.");
 }
 
 
