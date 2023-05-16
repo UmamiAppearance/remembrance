@@ -5,11 +5,11 @@ Make sure your source and build/dist files are up to date.
 ## Idea
 This little tool was born, when I made a release of a JavaScript project. Everything worked perfectly, all bugs fixed, no linting errors, but I forgot to call one build function. The consequence was a new patch release, only to deliver the updated dist packages. Let's face it. These types of errors is something we humans are really good at.  
   
-**remembrance** is a solution to prevent this error. It is added to the regular testing routine, and checks whether any dist/build files are not up to date.
+**remembrance** is a solution to prevent this particular error. It is added to the regular testing routine, and checks whether any dist/build files are not up to date.
 
 
 ## How it works
-The testing routine walks through all source files and stores the most current modification date. All automatically build distribution files must have a modification date, which is even more current, if this is not the case, well we have an error case and the test fails.
+The testing routine walks through all (user defined) source files and stores the most current modification date. All automatically build distribution files (also provided by the user) must have a modification date, which is even more current, if this is not the case - well - we have an error case and the test fails.
 
 
 ## Installation
