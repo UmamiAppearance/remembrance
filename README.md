@@ -65,6 +65,7 @@ This configuration takes `index.js` as the source file. All files found (that ma
 | _includeTests_ | `false`                                   | `Boolean`                      | usually test folders are completely ignored, but this can be disabled by passing `false`                                                              | _no_      |
 | _silent_       | `false`                                   | `Boolean`                      | if outdated files are found, it gets logged to the terminal, disable this by passing `true`                                                           | _no_      |
 | _src_          | `null`                                    | `String`/`String[]`            | pass source files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                               | _yes_     |
+| _tolerance_    | `5000`                                    | `Number` (ms)                  | by default the modification time comparison allows a tolerance of 5000 milliseconds, change it if necessary                                           | _no_     |
 | _warnOnly_     | `false` (`true` if `NODE_ENV=production`) | `Boolean`                      | if set to `true` the test will only warn for outdated files, but it will not fail                                                                     | _no_      |
 
 
@@ -81,6 +82,7 @@ This configuration takes `index.js` as the source file. All files found (that ma
         "**/src/**",
         "./index.ts"
     ],
+    "tolerance": 5000,
     "warnOnly": false
 }
 ```

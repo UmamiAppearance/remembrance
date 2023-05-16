@@ -3,7 +3,7 @@
 /**
  * [remembrance]{@link https://github.com/UmamiAppearance/remembrance}
  *
- * @version 0.1.0
+ * @version 0.2.0
  * @author UmamiAppearance [mail@umamiappearance.eu]
  * @license MIT
  */
@@ -80,6 +80,11 @@ if (config.warnOnly === undefined) {
 
 if (config.silent === undefined) {
     config.silent = false;
+}
+
+// set default tolerance in ms
+if (config.tolerance === undefined) {
+    config.tolerance = 5000;
 }
 
 // log config settings in debug mode
@@ -269,8 +274,11 @@ for (const file of srcFiles) {
     }
 }
 
+// remove some milliseconds to add tolerance (according to config.tolerance)
+sTime = sTime.setMilliseconds(sTime.getMilliseconds() - config.tolerance);
+
 if (config.debug) {
-    debugInfo(`Most current source file is '${mostCurrentFile}'`);
+    debugInfo(`Most current source file is '${mostCurrentFile}' (${sTime})`);
 }
 
 

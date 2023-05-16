@@ -1,6 +1,6 @@
 {
   "name": "remembrance",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Make sure your source and build/dist files are up to date.",
   "main": "index.js",
   "bin": {
