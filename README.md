@@ -1,5 +1,5 @@
 # remembrance
-Make sure your build files are up to date.
+Make sure your source and build/dist files are up to date.
 
 
 ## Idea
@@ -7,13 +7,16 @@ This little tool was born, when I made a release of a JavaScript project. Everyt
   
 **remembrance** is a solution to prevent this error. It is added to the regular testing routine, and checks whether any dist/build files are not up to date.
 
+
 ## How it works
 The testing routine walks through all source files and stores the most current modification date. All automatically build distribution files must have a modification date, which is even more current, if this is not the case, well we have an error case and the test fails.
+
 
 ## Installation
 ```sh
 npm install remembrance --save-dev
 ```
+
 
 ## Usage
 Add `remembrance` to the test script in `package.json`. Let's imagine the current test runner is [ava](https://github.com/avajs/ava): the script section may look like this:
@@ -26,6 +29,7 @@ Add `remembrance` to the test script in `package.json`. Let's imagine the curren
 
 The next step is to create the _json-file_ [`.remembrance.json`](#configuration) in the projects root folder. 
 
+
 ### What about tests during development?
 It is probably not a goal to get failed tests because of outdated build files while developing. If **remembrance** sees the `NODE_ENV=production` environment variable, it will not make the test fail but only warn. However, it can be much more convenient to create different test cases for production and development. For instance (assuming _ava_ as the test runner again):
 
@@ -35,6 +39,7 @@ It is probably not a goal to get failed tests because of outdated build files wh
     "test:dev": "ava",
 }
 ```
+
 
 ## Configuration
 All configuration can be made by creating the file `.remembrance.json` in the projects root folder. This is a mandatory step, as you have to tell **remembrance** what your source and build/dist files are. The most basic json-file may look like this:
@@ -48,6 +53,7 @@ All configuration can be made by creating the file `.remembrance.json` in the pr
 
 This configuration takes `index.js` as the source file. All files found (that match the extension list) in `./dist` must have a more current modification date or the test will fail. It is possible to specify one file or multiple files as an array as well as complete directories. Relative paths are getting converted into absolute paths apart from that, you can apply a [minimatch pattern](https://github.com/isaacs/minimatch) or an array of patterns.
 
+
 ### List of keys and values for `.remembrance.json`
 
 | key            | default                                   | type                           | effect                                                                                                                                                | required? |
@@ -60,6 +66,7 @@ This configuration takes `index.js` as the source file. All files found (that ma
 | _silent_       | `false`                                   | `Boolean`                      | if outdated files are found, it gets logged to the terminal, disable this by passing `true`                                                           | _no_      |
 | _src_          | `null`                                    | `String`/`String[]`            | pass source files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                               | _yes_     |
 | _warnOnly_     | `false` (`true` if `NODE_ENV=production`) | `Boolean`                      | if set to `true` the test will only warn for outdated files, but it will not fail                                                                     | _no_      |
+
 
 #### Complete `.remembrance.json` Example:
 ```json
