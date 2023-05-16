@@ -1,3 +1,12 @@
+/**
+ * [remembrance]{@link https://github.com/UmamiAppearance/remembrance}
+ *
+ * @version 0.1.0
+ * @author UmamiAppearance [mail@umamiappearance.eu]
+ * @license MIT
+ */
+
+
 import { join as joinPath } from "path";
 import { readdir, readFile, stat } from "fs/promises";
 import picomatch from "picomatch";
