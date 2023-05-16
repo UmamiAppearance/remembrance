@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * [remembrance]{@link https://github.com/UmamiAppearance/remembrance}
  *
