@@ -13,7 +13,7 @@ This little tool was born, when I made a release of a JavaScript project. Everyt
 
 
 ## How it works
-The testing routine walks through all (user defined) source files and stores the most current modification date. All automatically build distribution files (also provided by the user) must have a modification date, which is even more current, if this is not the case - well - we have an error case and the test fails.
+The testing routine walks through all (user defined) source files and stores the most current modification date. All automatically build distribution files (also provided by the user) must have the same modification date or one even more current, if this is not the case - well - we have an error case and the test fails.
 
 
 ## Installation
