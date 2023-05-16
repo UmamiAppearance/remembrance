@@ -77,7 +77,7 @@ if (config.debug) {
 }
 
 
-// ignore typical test folders by default
+// ignore typical test folders by default (cf. https://github.com/avajs/ava/blob/main/docs/05-command-line.md)
 const excludeList = !config.includeTests
     ? [
         "**/__tests__/**/__helper__/**/*",
