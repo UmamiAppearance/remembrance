@@ -1,4 +1,8 @@
 # remembrance
+
+[![License](https://img.shields.io/github/license/UmamiAppearance/remembrance?color=009911&style=for-the-badge)](./LICENSE)
+[![npm](https://img.shields.io/npm/v/remembrance?color=%23009911&style=for-the-badge)](https://www.npmjs.com/package/remembrance)
+
 Make sure your source and build/dist files are up to date.
 
 
