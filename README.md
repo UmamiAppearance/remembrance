@@ -37,7 +37,7 @@ It is probably not a goal to get failed tests because of outdated build files wh
 ```
 
 ## Configuration
-All configuration can be made by creating the file `.remembrance.json` in the projects root folder. This is a mandatory step, as you have to tell **remembrance** what your source and build/dist files are. The most basic json-file may loom like this:
+All configuration can be made by creating the file `.remembrance.json` in the projects root folder. This is a mandatory step, as you have to tell **remembrance** what your source and build/dist files are. The most basic json-file may look like this:
 
 ```json
 {
@@ -50,17 +50,30 @@ This configuration takes `index.js` as the source file. All files found (that ma
 
 ### List of keys and values for `.remembrance.json`
 
-| key | value | type | required? |
-| --- |------ |----- | --------- |
+| key            | default                                   | type                           | effect                                                                                                                                                | required? |
+| -------------- |------------------------------------------ |------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| _debug_        | `false`                                   | `Boolean`/`String ("verbose")` | enable debugging information with`true` or `"verbose"`                                                                                                | _no_      |
+| _dist_         | `null`                                    | `String`/`String[]`            | pass distribution files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                         | _yes_     | 
+| _exclude_      | `null`                                    | `String`/`String[]`            | pass source and/or distribution files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list), which should be excluded | _no_      |
+| _extensions_   | `[ "cjs", "js", "map", "mjs", "ts" ]`     | `String[]`                     | only files of the given types are taken into account                                                                                                  | _no_      |
+| _includeTests_ | `false`                                   | `Boolean`                      | usually test folders are completely ignored, but this can be disabled by passing `false`                                                              | _no_      |
+| _silent_       | `false`                                   | `Boolean`                      | if outdated files are found, it gets logged to the terminal, disable this by passing `true`                                                           | _no_      |
+| _src_          | `null`                                    | `String`/`String[]`            | pass source files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                               | _yes_     |
+| _warnOnly_     | `false` (`true` if `NODE_ENV=production`) | `Boolean`                      | if set to `true` the test will only warn for outdated files, but it will not fail                                                                     | _no_      |
 
-
-### config
- * src
- * dist
- * extensions
- * warnOnly
- * silent
- * debug
- * exclude
- * includeTests
- * 
+#### Complete `.remembrance.json` Example:
+```json
+{
+    "debug": false,
+    "dist": "./dist/**",
+    "exclude": "./dist/build-0.1.3-legacy.js",
+    "extensions": [ "cjs", "js", "map", "mjs", "ts" ],
+    "includeTests": false,
+    "silent": false,
+    "src": [
+        "**/src/**",
+        "./index.ts"
+    ],
+    "warnOnly": false
+}
+```
