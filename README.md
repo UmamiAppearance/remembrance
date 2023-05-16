@@ -84,3 +84,9 @@ This configuration takes `index.js` as the source file. All files found (that ma
     "warnOnly": false
 }
 ```
+
+## License
+
+[MIT](https://opensource.org/licenses/MIT)
+
+Copyright (c) 2023, UmamiAppearance
