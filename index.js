@@ -3,7 +3,7 @@
 /**
  * [remembrance]{@link https://github.com/UmamiAppearance/remembrance}
  *
- * @version 0.2.0
+ * @version 0.3.0
  * @author UmamiAppearance [mail@umamiappearance.eu]
  * @license MIT
  */
@@ -52,12 +52,19 @@ try {
 }
 const config = JSON.parse(data);
 
-// test for the two mandatory keys "src" and "dist"
-if (!config.src) {
-    throwError("Key 'src' must be set in '.remembrance.json'.");
-}
-if (!config.dist) {
-    throwError("Key 'dist' must be set in '.remembrance.json'.");
+// set a variable for solo package.json tests
+let jsonSolo = false;
+
+// test for the two mandatory keys "src" and "dist" (unless "packageJSON" is set to "solo")
+if (config.packageJSON !== "solo") {
+    if (!config.src) {
+        throwError("Key 'src' must be set in '.remembrance.json'.");
+    }
+    if (!config.dist) {
+        throwError("Key 'dist' must be set in '.remembrance.json'.");
+    }
+} else {
+    jsonSolo = true;
 }
 
 
@@ -70,8 +77,8 @@ if (!Array.isArray(config.extensions)) {
     config.extensions = [ "cjs", "js", "map", "mjs", "ts" ];
 }
 
-if (config.packageLock === undefined) {
-    config.packageLock = true;
+if (config.packageJSON === undefined) {
+    config.packageJSON = true;
 }
 
 if (config.warnOnly === undefined) {
@@ -94,6 +101,58 @@ if (config.tolerance === undefined) {
 // log config settings in debug mode
 if (config.debug) {
     debugInfo(`Config-Settings ${JSON.stringify(config, null, 4)}`);
+}
+
+// test package.json anf package-lock.json if not disabled
+let preError = false;
+if (config.packageJSON) {
+    if (config.debug) {
+        debugInfo("Testing if 'package-lock.json' is up to date...");
+    }
+
+    const testPKGJson = async file => {
+        let mtime;
+        try {
+            mtime = (await stat(joinPath(CWD, file))).mtime;
+        } catch(err) {
+            if (err.code !== "ENOENT") {
+                throwError(err);
+            } else if (config.debug) {
+                console.log(`... '${file}' was not found --> skipped`);
+            }
+        }
+        return mtime;
+    };
+
+    let packageJSONmTime = await testPKGJson("package.json");
+    
+    if (packageJSONmTime) {
+        
+        packageJSONmTime = new Date(packageJSONmTime.setMilliseconds(packageJSONmTime.getMilliseconds() - config.tolerance));
+        const packageLockJSONmTime = await testPKGJson("package-lock.json");
+        
+        if (packageLockJSONmTime) {
+            if (packageLockJSONmTime < packageJSONmTime) {
+                if (!config.silent) {
+                    console.warn("  ==> 'package-lock.json' is not up to date");
+                }
+                if (!config.warnOnly) {
+                    process.exit(1);
+                } else {
+                    preError = true;
+                }
+            }
+
+            else if (config.debug) {
+                console.log("... PASSED!\n");
+            }
+        }
+    }
+}   
+
+// end here if jsonSolo
+if (jsonSolo) {
+    process.exit(0);
 }
 
 
@@ -166,33 +225,6 @@ const ensureExtension = reMatch(
 // source and dist file picomatch functions
 const matchSrc = picomatch(renderList(config.src));
 const matchDist = picomatch(renderList(config.dist));
-
-
-// test package.json anf package-lock.json if not disabled
-if (config.packageLock) {
-    const testPKGJson = async file => {
-        let mtime;
-        try {
-            mtime = (await stat(joinPath(CWD, file))).mtime;
-        } catch(err) {
-            if (err.code !== "ENOENT") {
-                throwError(err);
-            }
-        }
-        return mtime;
-    };
-
-    const packageJSON = await testPKGJson("package.json");
-    
-    if (packageJSON) { 
-
-        const packageLockJSON = await testPKGJson("package-lock.json");
-
-        console.log(packageJSON, packageLockJSON);
-    }
-}
-    
-    
 
 
 // file collecting function
@@ -314,7 +346,7 @@ for (const file of srcFiles) {
 }
 
 // remove some milliseconds to add tolerance (according to config.tolerance)
-sTime = sTime.setMilliseconds(sTime.getMilliseconds() - config.tolerance);
+sTime = new Date(sTime.setMilliseconds(sTime.getMilliseconds() - config.tolerance));
 
 if (config.debug) {
     debugInfo(`Most current source file is '${mostCurrentFile}' (${sTime})`);
@@ -345,6 +377,22 @@ for (const file of distFiles) {
 }
 
 // exit with an error if error case not deliberately ignored
-if (outdated && !config.warnOnly) {
-    process.exit(1);
+if (outdated) {
+    if (config.debug) {
+        debugInfo("Finished tests, but found errors.");
+    }
+
+    if (!config.warnOnly) {
+        process.exitCode = 1;
+    } else if (config.debug) {
+        debugInfo("Due to current settings errors are ignored.");
+    }
+}
+
+else if (config.debug) {
+    if (!preError) {
+        debugInfo("Finished tests without errors.");
+    } else {
+        debugInfo("Main tests passed.");
+    }
 }

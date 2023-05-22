@@ -1,0 +1,6 @@
+{
+    "src": "./index.js",
+    "dist": "./dist/dist.js",
+    "includeTests": true,
+    "packageJSON": false
+}
