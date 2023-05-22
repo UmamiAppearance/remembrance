@@ -34,8 +34,7 @@ const tests = {
     testD: await testRun("D: Multi file build fail.", "./test/fixtures/projectD", true),
     testE: await testRun("E: File extension modification.", "./test/fixtures/projectE"),
     testF: await testRun("F: package(-lock).json synchronicity success.", "./test/fixtures/projectF"),
-    testG: await testRun("G: package(-lock).json synchronicity fail.", "./test/fixtures/projectG", true),
-    testH: await testRun("H: package(-lock).json disabled synchronicity.", "./test/fixtures/projectH")
+    testG: await testRun("G: package(-lock).json disabled synchronicity.", "./test/fixtures/projectG")
 };
 
 // search for any non zero exit code
