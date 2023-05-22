@@ -70,6 +70,10 @@ if (!Array.isArray(config.extensions)) {
     config.extensions = [ "cjs", "js", "map", "mjs", "ts" ];
 }
 
+if (config.packageLock === undefined) {
+    config.packageLock = true;
+}
+
 if (config.warnOnly === undefined) {
     if (process.env.NODE_ENV && process.env.NODE_ENV === "development") {
         config.warnOnly = true;
@@ -164,6 +168,32 @@ const matchSrc = picomatch(renderList(config.src));
 const matchDist = picomatch(renderList(config.dist));
 
 
+// test package.json anf package-lock.json if not disabled
+if (config.packageLock) {
+    const testPKGJson = async file => {
+        let mtime;
+        try {
+            mtime = (await stat(joinPath(CWD, file))).mtime;
+        } catch(err) {
+            if (err.code !== "ENOENT") {
+                throwError(err);
+            }
+        }
+        return mtime;
+    };
+
+    const packageJSON = await testPKGJson("package.json");
+    
+    if (packageJSON) { 
+
+        const packageLockJSON = await testPKGJson("package-lock.json");
+
+        console.log(packageJSON, packageLockJSON);
+    }
+}
+    
+    
+
 
 // file collecting function
 const collectFiles = async () => {
@@ -247,6 +277,15 @@ const collectFiles = async () => {
 
 // collect source and dist files in different vars
 const { srcFiles, distFiles } = await collectFiles();
+
+// list all 
+if (config.debug) {
+    debugInfo("Source Files Collection:");
+    console.table(srcFiles);
+
+    debugInfo("Dist Files Collection:");
+    console.table(distFiles);
+}
 
 // initialize a last modified value for the source files
 // start at unix-time zero (to allow immediate overwriting)
