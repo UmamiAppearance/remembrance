@@ -9,7 +9,9 @@ Keep your source and build/dist files in sync.
 ## Idea
 This little tool was born, when I made a release of a JavaScript project. Everything worked perfectly, all bugs fixed, no linting errors, but I forgot to call one build function. The consequence was a new patch release, only to deliver the updated dist packages. Let's face it. These types of errors is something we humans are really good at.  
   
-**remembrance** is a solution to prevent this particular error. It is added to the regular testing routine, and checks whether any dist/build files are not up to date.
+**remembrance** is a solution to prevent this particular error. It is added to the regular testing routine, and checks whether any dist/build files are not up to date.  
+  
+If not [explicitly disabled](#list-of-keys-and-values-for-remembrancejson), **remembrance** also checks whether `package.json` and `package-lock.json` are in sync (according to the modification date).
 
 
 ## How it works
@@ -23,7 +25,7 @@ npm install remembrance --save-dev
 
 
 ## Usage
-Add `remembrance` to the test script in `package.json`. Let's imagine the current test runner is [ava](https://github.com/avajs/ava): the script section may look like this:
+Add `remembrance` to the test script in `package.json`. Let's imagine the current test runner is [ava](https://github.com/avajs/ava) - the script section may look like this:
 
 ```json
 "scripts": {
@@ -60,17 +62,18 @@ This configuration takes `index.js` as the source file. All files found (that ma
 
 ### List of keys and values for `.remembrance.json`
 
-| key            | default                                   | type                           | effect                                                                                                                                                | required? |
-| -------------- |------------------------------------------ |------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| _debug_        | `false`                                   | `Boolean`/`String ("verbose")` | enable debugging information with`true` or `"verbose"`                                                                                                | _no_      |
-| _dist_         | `null`                                    | `String`/`String[]`            | pass distribution files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                         | _yes_     | 
-| _exclude_      | `null`                                    | `String`/`String[]`            | pass source and/or distribution files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list), which should be excluded | _no_      |
-| _extensions_   | `[ "cjs", "js", "map", "mjs", "ts" ]`     | `String[]`                     | only files of the given types are taken into account                                                                                                  | _no_      |
-| _includeTests_ | `false`                                   | `Boolean`                      | usually test folders are completely ignored, but this can be disabled by passing `false`                                                              | _no_      |
-| _silent_       | `false`                                   | `Boolean`                      | if outdated files are found, it gets logged to the terminal, disable this by passing `true`                                                           | _no_      |
-| _src_          | `null`                                    | `String`/`String[]`            | pass source files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                               | _yes_     |
-| _tolerance_    | `5000`                                    | `Number` _(ms)_                | by default the modification time comparison allows a tolerance of 5000 milliseconds, change it if necessary                                           | _no_     |
-| _warnOnly_     | `false` (`true` if `NODE_ENV=production`) | `Boolean`                      | if set to `true` the test will only warn for outdated files, but it will not fail                                                                     | _no_      |
+| key            | default                                   | type                  | effect                                                                                                                                                                                                     | required? |
+| -------------- |------------------------------------------ |-----------------------| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| _debug_        | `false`                                   | `Boolean`/`"verbose"` | enable debugging information with`true` or `"verbose"`                                                                                                                                                     | _no_      |
+| _dist_         | `null`                                    | `String`/`String[]`   | pass distribution files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                                                                              | _yes_     | 
+| _exclude_      | `null`                                    | `String`/`String[]`   | pass source and/or distribution files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list), which should be excluded                                                      | _no_      |
+| _extensions_   | `[ "cjs", "js", "map", "mjs", "ts" ]`     | `String[]`            | only files of the given types are taken into account                                                                                                                                                       | _no_      |
+| _includeTests_ | `false`                                   | `Boolean`             | usually test folders are completely ignored, but this can be disabled by passing `false`                                                                                                                   | _no_      |
+| _packageJSON_  | `true`                                    | `Boolean` / `"solo"`  | if not disabled, it gets tested whether _package-lock.json_ is older than _package.json_; by passing the string `"solo"` all other tests get skipped (`src` and `dist` are no longer required in this case) | _no_      |
+| _silent_       | `false`                                   | `Boolean`             | if outdated files are found, it gets logged to the terminal, disable this by passing `true`                                                                                                                | _no_      |
+| _src_          | `null`                                    | `String`/`String[]`   | pass source files as a string/[minimatch-pattern](https://github.com/isaacs/minimatch) (also as a list)                                                                                                    | _yes_     |
+| _tolerance_    | `5000`                                    | `Number`              | number of tolerance in ms; by default the modification time comparison allows a tolerance of 5000 milliseconds, change it if necessary                                                                     | _no_      |
+| _warnOnly_     | `false` (`true` if `NODE_ENV=production`) | `Boolean`             | if set to `true` the test will only warn for outdated files, but it will not fail                                                                                                                          | _no_      |
 
 
 #### Complete `.remembrance.json` Example:
@@ -81,6 +84,7 @@ This configuration takes `index.js` as the source file. All files found (that ma
     "exclude": "./dist/build-0.1.3-legacy.js",
     "extensions": [ "cjs", "js", "map", "mjs", "ts" ],
     "includeTests": false,
+    "packageJSON": true,
     "silent": false,
     "src": [
         "**/src/**",
