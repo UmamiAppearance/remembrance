@@ -26,15 +26,18 @@ const testRun = async (info, cwd, expectError=false) => {
 };
 
 
+const failing = process.argv.includes("full");
+
 // test runs
 const tests = {
     testA: await testRun("A: Single file build success.", "./test/fixtures/projectA"),
-    testB: await testRun("B: Single file build fail.", "./test/fixtures/projectB", true),
+    testB: await testRun("B: Single file build fail.", "./test/fixtures/projectB", failing),
     testC: await testRun("C: Multi file build success.", "./test/fixtures/projectC"),
-    testD: await testRun("D: Multi file build fail.", "./test/fixtures/projectD", true),
+    testD: await testRun("D: Multi file build fail.", "./test/fixtures/projectD", failing),
     testE: await testRun("E: File extension modification.", "./test/fixtures/projectE"),
     testF: await testRun("F: package(-lock).json synchronicity success.", "./test/fixtures/projectF"),
-    testG: await testRun("G: package(-lock).json disabled synchronicity.", "./test/fixtures/projectG")
+    testG: await testRun("G: package(-lock).json synchronicity fail.", "./test/fixtures/projectG", failing),
+    testH: await testRun("H: package(-lock).json disabled synchronicity.", "./test/fixtures/projectH")
 };
 
 // search for any non zero exit code

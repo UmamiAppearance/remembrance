@@ -10,8 +10,9 @@
   "scripts": {
     "lint": "eslint ./index.js",
     "lint:fix": "eslint ./index.js --fix",
-    "test": "node ./index.js && node ./test/test.js",
-    "test:dev": "node ./test/test.js"
+    "test": "node ./index.js && node ./test/test.js ",
+    "test:local": "node ./index.js && node ./test/test.js -- full",
+    "test:dev": "node ./test/test.js -- full"
   },
   "repository": {
     "type": "git",
